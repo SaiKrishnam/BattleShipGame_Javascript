@@ -6,7 +6,7 @@ var view = {
 		var messageArea = document.getElementById("messageArea");
 		messageArea.innerHTML = msg ; 
 	},
-	
+
 	displayHit: function(location){
 			var cell = document.getElementById(location);
 			cell.setAttribute("class","hit");
@@ -29,9 +29,9 @@ var model = {
 	shipLength: 3,
 	shipsSunk: 0,
 	
-	ships: [  {locations: ["06","16","26"], hits: ["","",""]},
-			  {locations: ["24","34","44"], hits: ["10","11","12"]},
-			  {locations: ["10","11","12"], hits: ["","",""]}           ],
+	ships: [  {locations: [0,0,0], hits: ["","",""]},
+			  {locations: [0,0,0], hits: ["","",""]},
+			  {locations: [0,0,0], hits: ["","",""]}           ],
 	
 	fire: function(guess){
 		
@@ -66,6 +66,73 @@ var model = {
 			 
 		}
 		return true ;
+	},
+	
+	//placing the ships randomly 
+	generateShipLocations: function(){
+		var locations ;
+		for(var i = 0; i< this.numShips; i++){
+			
+			do{
+				locations = this.generateShip();
+				
+			}while(this.collision(locations));
+			this.ships[i].locations = locations ;
+		
+		}
+		
+	},
+	
+	generateShip: function(){
+		var direction = Math.floor(Math.random()*2);
+		var row ; 
+		var col;
+		if(direction === 1){
+			//generate starting location for horizontal ship
+			// ship can be any row,but column=0-4
+			//length of ship is taken into consideration for generalization:this.shipLength
+			 col = Math.floor(Math.random()*(this.boardSize-(this.shipLength+1)));
+			 row = Math.floor(Math.random()*(this.boardSize));
+			
+		}else{
+			//generate starting location for vertical ship
+			row = Math.floor(Math.random()*(this.boardSize-(this.shipLength+1)));
+		    col = Math.floor(Math.random()*(this.boardSize));
+			
+		}
+		
+		var newShipLocations = [] ;
+		for(var i = 0; i < this.shipLength; i++){
+			if(direction === 1){
+				// add location to array for new horizontal ship
+				newShipLocations.push(row + "" + (col+i));	
+			}else{
+				//add location to array for new vertical ship
+				newShipLocations.push((row+i) + "" + col);
+			}
+		}
+		
+		return newShipLocations ;
+	},
+	
+	collision: function(locations){
+		
+		for(var i = 0; i < this.numShips; i++){
+			var ship = model.ships[i];
+			
+			for(var j = 0; j < locations.length; j++){
+				
+				if(ship.locations.indexOf(locations[j]) >= 0){
+					
+					return true;
+				}
+				
+				
+			}
+			
+		}
+		
+		return false ;
 	}
 	
 	
@@ -85,7 +152,7 @@ var controller = {
 			var hit = model.fire(location);
 			
 			if(hit && (model.shipsSunk === model.numShips)){
-				view.displayMessage("u sank all my ships in " + this.guesses +" guesses");
+				view.displayMessage("You sank all my ships in" + this.guesses +" guesses");
 			}
 		}
 		
@@ -152,6 +219,8 @@ function init() {
 	
 	var guessInput = document.getElementById("guessInput");
 	guessInput.onkeypress = handleKeyPress ;
+	
+	model.generateShipLocations();
 }
 
 function handleFireButton () {
