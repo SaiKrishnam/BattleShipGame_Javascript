@@ -1,3 +1,6 @@
+
+//checking my change 
+
 var view = {
 	displayMessage: function(msg){
 		var messageArea = document.getElementById("messageArea");
